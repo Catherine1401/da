@@ -37,3 +37,5 @@ python3 -m venv .venv
 ```
 
 The slide and report scripts read only `out/`, so run `make_nb.py` first. All three scripts overwrite the files in `deliverables/`.
+
+Autonomous agents: read `AGENTS.md` (setup, run, verification checklist, troubleshooting).
