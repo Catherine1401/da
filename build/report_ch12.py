@@ -57,6 +57,7 @@ def data_overview(s: SummaryData) -> list:
     fill = table("t_fill").set_index("Cột")["Tỷ lệ có trả lời (%)"]
     rows = [(name, desc, pct(fill[name], 1)) for name, desc in VARIABLES]
     return [
+        Break(),
         Head("2. Dữ liệu và tiền xử lý", 1),
         Head("2.1. Nguồn dữ liệu và cấu trúc", 2),
         Para("Dữ liệu lấy từ kho lưu trữ chính thức của Stack Overflow trên GitHub, gồm hai tệp: results.csv (câu trả lời) và schema.csv (mô tả câu hỏi). "

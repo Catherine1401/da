@@ -100,7 +100,7 @@ def references() -> list:
 
 
 def appendix() -> list:
-    """Phụ lục A–D: bảng chi tiết và hướng dẫn tái lập."""
+    """Phụ lục A–D: bảng chi tiết."""
     lang = table("f3_1").sort_values("have_pct", ascending=False)
     lang_rows = [(r.value, fmt_int(r.users), pct(r.have_pct), pct(r.want_pct), pct(r.admired_pct)) for r in lang.itertuples()]
     country = table("f7_1").sort_values("median", ascending=False)
@@ -123,13 +123,6 @@ def appendix() -> list:
         Head("Phụ lục D. Từ khóa trong câu trả lời về kỹ năng", 2),
         Para("[[tab:appxwords]] liệt kê 30 từ khóa xuất hiện nhiều nhất trong câu trả lời về kỹ năng."),
         Tab("30 từ khóa xuất hiện nhiều nhất", ["Hạng", "Từ khóa", "Số câu trả lời", "Tỷ lệ"], word_rows, [1.4, 3.5, 3, 2.4], "appxwords"),
-        Head("Phụ lục E. Hướng dẫn tái lập kết quả", 2),
-        Bullets([
-            "Tạo môi trường: python -m venv .venv, kích hoạt rồi chạy pip install -r requirements.txt.",
-            "Chạy notebook: python build/make_nb.py (ghép các phần trong notebook/parts thành deliverables/so2025.ipynb, chạy từ đầu; tự tải results.csv nếu chưa có trong thư mục data).",
-            "Dựng slide: python build/build_pptx.py; dựng báo cáo: python build/build_docx.py (đếm trang bằng LibreOffice).",
-            "Mọi số liệu trong slide và báo cáo được đọc từ thư mục out/ do notebook sinh ra, nên ba sản phẩm luôn khớp nhau.",
-        ]),
     ]
 
 

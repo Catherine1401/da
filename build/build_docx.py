@@ -4,33 +4,34 @@ import sys
 import tempfile
 from pathlib import Path
 
-from docx.shared import Pt
+from docx.enum.section import WD_SECTION
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from data import ROOT, SummaryData, fmt_int, fmt_num, load_note, load_summary
-from docx_kit import (Break, Bullets, Fig, Head, Para, Tab, add_page_break, add_toc, heading_entries, new_document,
+from data import ROOT, SummaryData, fmt_int, fmt_num, load_summary
+from docx_front import Cover, Member, add_cover, add_front_grid, finish_sections, to_roman
+from docx_kit import (Break, Bullets, Head, Para, add_toc, caption_entries, heading_entries, new_document,
                       render_blocks, resolve_refs)
 from report_ch12 import chapters_1_2
 from report_ch3 import chapter3
 from report_ch4 import chapter4
 from report_ch56 import chapters_5_6
+from report_front import member_grid, task_grids, term_grid
 from report_common import pct, usd
 
 OUT_DOCX = ROOT / "deliverables" / "report.docx"
 MIN_PAGES = 30
 TITLE = "Phân tích xu hướng công nghệ và mức lương lập trình viên"
 SUBTITLE = "Qua khảo sát Stack Overflow Developer Survey 2025"
-COURSE = "Học phần CSE702060 – Trực quan hóa dữ liệu · Phenikaa School of Computing"
-LECTURER = "Giảng viên: Nguyễn Ngọc Giang"
 TEAM = "Nhóm 8"
-MEMBERS = ("Lê Đức Duy – 23010772", "Vũ Viết Huy – 23010699", "Lê Mạnh Hùng – 23010123", "Nguyễn Bá Huy – 23010806")
-DATE_TEXT = "Tháng 10 năm 2026"
 MATCH_PREFIX = 40
 ABSTRACT_TITLE = "Tóm tắt báo cáo"
 TOC_TITLE = "Mục lục"
 FIG_LIST_TITLE = "Danh mục hình"
 TAB_LIST_TITLE = "Danh mục bảng"
+MEMBER_TITLE = "Danh sách thành viên"
+TASK_TITLE = "Phân công nhiệm vụ"
+TERM_TITLE = "Danh sách thuật ngữ"
 
 
 def abstract_blocks(s: SummaryData) -> list:
@@ -56,50 +57,52 @@ def body_blocks(s: SummaryData) -> list:
     return resolve_refs(abstract_blocks(s) + chapters_1_2(s) + chapter3(s) + chapter4(s) + chapters_5_6(s))
 
 
-def caption_entries(blocks: list) -> tuple:
-    """Danh sách chú thích hình và bảng theo thứ tự (để lập danh mục)."""
-    figs, tabs = [], []
-    for block in blocks:
-        if isinstance(block, Fig):
-            figs.append(f"Hình {len(figs) + 1}. {load_note(block.code).title}")
-        elif isinstance(block, Tab):
-            tabs.append(f"Bảng {len(tabs) + 1}. {block.caption}")
-    return figs, tabs
+def cover_info() -> Cover:
+    """Thông tin trang bìa theo mẫu của trường."""
+    members = (Member("Lê Đức Duy", "23010772"), Member("Vũ Viết Huy", "23010699"), Member("Lê Mạnh Hùng", "23010123"),
+               Member("Nguyễn Bá Huy", "23010806"))
+    return Cover("ĐẠI HỌC PHENIKAA", "TRƯỜNG CÔNG NGHỆ THÔNG TIN PHENIKAA", "BÀI TẬP LỚN", (TITLE.upper(), SUBTITLE.upper()),
+                 "Nguyễn Ngọc Giang", members, "Trực quan hóa dữ liệu (CSE702060)", "Hà Nội, tháng 10 năm 2026")
 
 
-def add_cover(doc) -> None:
-    """Trang bìa."""
-    for _ in range(5):
-        doc.add_paragraph()
-    for text, size, bold in ((TITLE, 26, True), (SUBTITLE, 16, False), ("", 0, False), (COURSE, 12, False), (LECTURER, 12, False), (TEAM, 14, True)):
-        para = doc.add_paragraph()
-        run = para.add_run(text)
-        run.bold = bold
-        if size:
-            run.font.size = Pt(size)
-    for member in MEMBERS:
-        doc.add_paragraph(member)
-    doc.add_paragraph()
-    doc.add_paragraph(DATE_TEXT)
-    add_page_break(doc)
+def add_front(doc, cover: Cover, toc: list, figs: list, tabs: list, pages: dict) -> None:
+    """Các trang đầu theo thứ tự mẫu: thành viên và phân công, mục lục, danh mục bảng, danh mục hình, thuật ngữ."""
+    add_front_grid(doc, member_grid(cover.members, MEMBER_TITLE))
+    for grid in task_grids(cover.members, TASK_TITLE):
+        add_front_grid(doc, grid)
+    add_toc(doc, toc, TOC_TITLE, new_page=True)
+    for title, items in ((TAB_LIST_TITLE, tabs), (FIG_LIST_TITLE, figs)):
+        add_toc(doc, [(text, 2, pages.get(text, "")) for text in items], title, new_page=True)
+    add_front_grid(doc, term_grid(TERM_TITLE), new_page=True)
 
 
 def build(pages: dict) -> object:
-    """Dựng tài liệu; pages ánh xạ tên mục hoặc chú thích tới số trang (lượt 1 để trống)."""
+    """Dựng tài liệu; pages ánh xạ chữ của mục hoặc chú thích tới số trang hiển thị (lượt 1 để trống)."""
     s = load_summary()
     blocks = body_blocks(s)
     figs, tabs = caption_entries(blocks)
+    cover = cover_info()
+    front = [title.upper() for title in (MEMBER_TITLE, TASK_TITLE, TAB_LIST_TITLE, FIG_LIST_TITLE, TERM_TITLE)]
+    heads = [(text, 1) for text in front] + heading_entries(blocks)
     doc = new_document()
     doc.core_properties.title, doc.core_properties.author = TITLE, TEAM
-    add_cover(doc)
-    add_toc(doc, [(text, level, pages.get(text, "")) for text, level in heading_entries(blocks)], TOC_TITLE)
-    add_page_break(doc)
-    add_toc(doc, [(text, 1, pages.get(text, "")) for text in figs], FIG_LIST_TITLE)
-    doc.add_paragraph()
-    add_toc(doc, [(text, 1, pages.get(text, "")) for text in tabs], TAB_LIST_TITLE)
-    add_page_break(doc)
-    render_blocks(doc, blocks, {"fig": 0, "tab": 0})
-    return doc, [text for text, _ in heading_entries(blocks)] + figs + tabs
+    add_cover(doc, cover)
+    doc.add_section(WD_SECTION.NEW_PAGE)
+    add_front(doc, cover, [(text, level, pages.get(text, "")) for text, level in heads], figs, tabs, pages)
+    doc.add_section(WD_SECTION.NEW_PAGE)
+    render_blocks(doc, blocks)
+    finish_sections(doc)
+    return doc, [text for text, _ in heads] + figs + tabs, head_of_body(blocks)
+
+
+def head_of_body(blocks: list) -> str:
+    """Chữ của tiêu đề đầu tiên phần nội dung (trang Ả Rập số 1)."""
+    return heading_entries(blocks)[0][0]
+
+
+def display_pages(found: dict, first_body: int) -> dict:
+    """Đổi trang vật lý sang số hiển thị: La Mã trước phần nội dung, Ả Rập từ 1 trong nội dung."""
+    return {key: (str(page - first_body + 1) if page >= first_body else to_roman(page)) for key, page in found.items()}
 
 
 def to_pdf(docx_path: Path, out_dir: Path) -> Path:
@@ -133,11 +136,12 @@ def main() -> None:
     OUT_DOCX.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        first, entries = build({})
+        first, entries, body_head = build({})
         draft = tmp_dir / "draft.docx"
         first.save(draft)
-        pages = locate(entries, pdf_pages(to_pdf(draft, tmp_dir)))
-        final, _ = build(pages)
+        found = locate(entries + [body_head], pdf_pages(to_pdf(draft, tmp_dir)))
+        pages = display_pages(found, found[body_head])
+        final, _, _ = build(pages)
         final.save(OUT_DOCX)
         total = len(pdf_pages(to_pdf(OUT_DOCX, tmp_dir)))
     missing = [e for e in entries if e not in pages]
