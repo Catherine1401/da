@@ -75,7 +75,7 @@ def chapter6(s: SummaryData) -> list:
     return [
         Head("6. Kết luận và hạn chế", 1),
         Head("6.1. Kết luận", 2),
-        Para("Đồ án đã trả lời chín câu hỏi bằng 23 biểu đồ, gồm các dạng bar, histogram, line, scatter, treemap, heatmap, ridgeline, spider, wordcloud, choropleth, network và Sankey. Ba kết luận chính: (1) công nghệ phổ biến không đồng nghĩa với được ngưỡng mộ; (2) lương lệch phải mạnh nên cần dùng median; (3) quốc gia và kinh nghiệm giải thích biến thiên của lương nhiều hơn hẳn ngôn ngữ lập trình."),
+        Para("Bài tập lớn đã trả lời chín câu hỏi bằng 23 biểu đồ, gồm các dạng bar, histogram, line, scatter, treemap, heatmap, ridgeline, spider, wordcloud, choropleth, network và Sankey. Ba kết luận chính: (1) công nghệ phổ biến không đồng nghĩa với được ngưỡng mộ; (2) lương lệch phải mạnh nên cần dùng median; (3) quốc gia và kinh nghiệm giải thích biến thiên của lương nhiều hơn hẳn ngôn ngữ lập trình."),
         Head("6.2. Khuyến nghị cho sinh viên và lập trình viên mới ở Việt Nam", 2),
         Bullets(list(s.recommendations)),
         Head("6.3. Hạn chế", 2),

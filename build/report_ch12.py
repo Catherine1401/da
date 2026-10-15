@@ -32,7 +32,7 @@ def chapter1(s: SummaryData) -> list:
         Para("Với sinh viên và lập trình viên mới, hai câu hỏi thực tế nhất là nên học công nghệ nào và có thể kỳ vọng mức lương ra sao. Hai câu hỏi này thường được trả lời bằng ý kiến cá nhân hoặc các bảng xếp hạng đơn giản. "
              "Dữ liệu khảo sát cho phép trả lời có bằng chứng hơn, nhưng cần trực quan hóa cẩn thận vì dữ liệu lớn, nhiều cột chọn nhiều đáp án, lương lệch rất mạnh và mẫu không đồng đều giữa các nước."),
         Head("1.2. Mục tiêu và đối tượng", 2),
-        Para("Đồ án có ba mục tiêu: (1) mô tả xu hướng công nghệ qua ba chỉ số là đang dùng, muốn dùng và được ngưỡng mộ; (2) mô tả mức lương và các yếu tố đi cùng mức lương; (3) kiểm chứng bằng một mô hình định lượng đơn giản xem yếu tố nào giải thích lương nhiều nhất."),
+        Para("Bài tập lớn có ba mục tiêu: (1) mô tả xu hướng công nghệ qua ba chỉ số là đang dùng, muốn dùng và được ngưỡng mộ; (2) mô tả mức lương và các yếu tố đi cùng mức lương; (3) kiểm chứng bằng một mô hình định lượng đơn giản xem yếu tố nào giải thích lương nhiều nhất."),
         Para("Theo cách đặt mục tiêu giao tiếp của bài giảng Data Storytelling, đối tượng của sản phẩm là sinh viên và lập trình viên mới ở Việt Nam. Mục tiêu giao tiếp: sau khi xem, họ sẽ hiểu công nghệ nào đang được dùng và ngưỡng mộ, mức lương đi cùng những yếu tố nào, từ đó có thể chọn công nghệ để học và đặt kỳ vọng lương hợp lý.", italic=True),
         Head("1.3. Câu hỏi phân tích", 2),
         Bullets([
@@ -47,7 +47,7 @@ def chapter1(s: SummaryData) -> list:
             "Q9. Người trả lời cho rằng kỹ năng nào còn giá trị trong 3–5 năm tới?",
         ]),
         Head("1.4. Phạm vi và cấu trúc báo cáo", 2),
-        Para("Phạm vi chỉ gồm dữ liệu khảo sát năm 2025 nên không đo được thay đổi theo thời gian; vì vậy khái niệm xu hướng được thay bằng ba chỉ số nói trên. Đồ án không xây dashboard tương tác mà tập trung vào ba sản phẩm: notebook phân tích, bộ slide thuyết trình và báo cáo này."),
+        Para("Phạm vi chỉ gồm dữ liệu khảo sát năm 2025 nên không đo được thay đổi theo thời gian; vì vậy khái niệm xu hướng được thay bằng ba chỉ số nói trên. Bài tập lớn không xây dashboard tương tác mà tập trung vào ba sản phẩm: notebook phân tích, bộ slide thuyết trình và báo cáo này."),
         Para("Báo cáo gồm sáu chương. Chương 2 mô tả dữ liệu và cách tiền xử lý. Chương 3 phân tích xu hướng công nghệ. Chương 4 phân tích mức lương, gồm cả mô hình hồi quy kiểm chứng. Chương 5 bàn về AI và kỹ năng tương lai rồi kể lại câu chuyện dữ liệu hoàn chỉnh. Chương 6 nêu kết luận, khuyến nghị, hạn chế và hướng phát triển. Mỗi biểu đồ có ba phần: cách đọc, nhận xét và insight."),
     ]
 
