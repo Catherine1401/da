@@ -10,8 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from data import ROOT, SummaryData, fmt_int, fmt_num, load_summary
 from docx_front import Cover, Member, add_cover, add_front_grid, finish_sections, to_roman
-from docx_kit import (Break, Bullets, Head, Para, add_toc, caption_entries, heading_entries, new_document,
+from docx_kit import (Break, Bullets, Head, Para, caption_entries, heading_entries, new_document,
                       render_blocks, resolve_refs)
+from docx_toc import FIG_ID, TAB_ID, add_toc, link_targets
 from report_ch12 import chapters_1_2
 from report_ch3 import chapter3
 from report_ch4 import chapter4
@@ -72,8 +73,8 @@ def add_front(doc, cover: Cover, toc: list, figs: list, tabs: list, pages: dict)
     for grid in task_grids(cover.members, TASK_TITLE):
         add_front_grid(doc, grid)
     add_toc(doc, toc, TOC_TITLE, new_page=True)
-    for title, items in ((TAB_LIST_TITLE, tabs), (FIG_LIST_TITLE, figs)):
-        add_toc(doc, [(text, 2, pages.get(text, "")) for text in items], title, new_page=True, figures=True)
+    for title, items, tc_id in ((TAB_LIST_TITLE, tabs, TAB_ID), (FIG_LIST_TITLE, figs, FIG_ID)):
+        add_toc(doc, [(text, 2, pages.get(text, "")) for text in items], title, new_page=True, tc_id=tc_id)
     add_front_grid(doc, term_grid(TERM_TITLE), new_page=True)
 
 
@@ -93,6 +94,7 @@ def build(pages: dict) -> object:
     doc.add_section(WD_SECTION.NEW_PAGE)
     render_blocks(doc, blocks)
     finish_sections(doc)
+    link_targets(doc, [text for text, _ in heads] + figs + tabs)
     return doc, [text for text, _ in heads] + figs + tabs, head_of_body(blocks)
 
 

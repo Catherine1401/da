@@ -6,7 +6,7 @@ from pathlib import Path
 from docx import Document
 from docx.enum.section import WD_ORIENT
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Twips
@@ -19,7 +19,6 @@ HEADER_CM = 1.25
 TEXT_W_CM = PAGE_W - MARGIN_LEFT_CM - MARGIN_RIGHT_CM
 FIG_W_CM = 15.5
 TEMPLATE = Path(__file__).resolve().parent / "assets" / "template.docx"
-TOC_TAB_TWIPS = 9061
 BULLET_NUM_ID = "2"
 NO_NUM_ID = "0"
 BULLET_TAB_TWIPS = 210
@@ -202,15 +201,6 @@ def add_title(doc: Document, text: str, new_page: bool = False, plain: bool = Fa
     if plain:
         para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     para.add_run(text.upper()).bold = plain or None
-
-
-def add_toc(doc: Document, entries: list, title: str, new_page: bool = False, figures: bool = False) -> None:
-    """Mục lục tĩnh theo kiểu toc 1–3 của mẫu (figures: kiểu table of figures cho danh mục hình, bảng)."""
-    add_title(doc, title, new_page, plain=not figures)
-    for text, level, page in entries:
-        para = doc.add_paragraph(style="table of figures" if figures else f"toc {level}")
-        para.paragraph_format.tab_stops.add_tab_stop(Twips(TOC_TAB_TWIPS), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
-        para.add_run(f"{text}\t{page}")
 
 
 def add_page_break(doc: Document) -> None:
