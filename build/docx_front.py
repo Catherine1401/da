@@ -1,12 +1,10 @@
-"""Phần đầu báo cáo theo mẫu: trang bìa có khung và logo, bảng không chú thích, đánh số trang La Mã và Ả Rập."""
+"""Phần đầu báo cáo theo mẫu: điền trang bìa có sẵn trong mẫu, bảng không chú thích, đánh số trang La Mã và Ả Rập."""
+from copy import deepcopy
 from dataclasses import dataclass
-from pathlib import Path
 
 from docx import Document
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt
 
 from docx_kit import add_grid, add_title
 
@@ -16,6 +14,8 @@ class Member:
     """Một thành viên nhóm."""
     name: str
     sid: str
+    phone: str
+    role: str
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,7 @@ class Cover:
     university: str
     school: str
     kind: str
+    subject: str
     title_lines: tuple
     lecturer: str
     members: tuple
@@ -40,46 +41,43 @@ class Grid:
     widths: list
 
 
-def cover_line(doc: Document, text: str, size: float, before: float = 0) -> None:
-    """Một dòng in đậm căn giữa trên trang bìa."""
-    para = doc.add_paragraph()
-    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    para.paragraph_format.space_before, para.paragraph_format.space_after = Pt(before), Pt(0)
-    run = para.add_run(text)
-    run.bold, run.font.size = True, Pt(size)
+def fill_token(root, token: str, value: str) -> None:
+    """Thay placeholder {token} trong các đoạn chữ của trang bìa mẫu."""
+    for text in root.iter(qn("w:t")):
+        if f"{{{token}}}" in text.text:
+            text.text = text.text.replace(f"{{{token}}}", value)
 
 
-def info_line(doc: Document, label: str, value: str, extra: str = "", before: float = 0) -> None:
-    """Một dòng thông tin trên bìa: nhãn đậm, giá trị và cột phụ thẳng hàng bằng điểm dừng tab."""
-    indent_cm, value_cm, extra_cm, size_pt, after_pt = 2.25, 5.5, 9.95, 14, 6
-    para = doc.add_paragraph()
-    fmt = para.paragraph_format
-    fmt.left_indent, fmt.space_before, fmt.space_after = Cm(indent_cm), Pt(before), Pt(after_pt)
-    para.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    for stop in (value_cm, extra_cm):
-        fmt.tab_stops.add_tab_stop(Cm(indent_cm + stop))
-    head = para.add_run(label)
-    head.bold, head.font.size = True, Pt(size_pt)
-    para.add_run(f"\t{value}" + (f"\t{extra}" if extra else "")).font.size = Pt(size_pt)
+def fill_members(cover_tbl, members: tuple) -> None:
+    """Nhân dòng thành viên của bảng lồng trên bìa mẫu: 'Họ tên - Mã sinh viên', cột lớp để trống."""
+    token = next(t for t in cover_tbl.iter(qn("w:t")) if "{member}" in t.text)
+    row = next(token.iterancestors(qn("w:tr")))
+    for member in members:
+        clone = deepcopy(row)
+        fill_token(clone, "member", f"{member.name} - {member.sid}")
+        fill_token(clone, "klass", "")
+        row.addprevious(clone)
+    row.getparent().remove(row)
+
+
+def trim_spacers(cover_tbl, count: int) -> None:
+    """Bỏ count đoạn trống ngay trước dòng nơi và thời gian để bìa vẫn nằm gọn một trang khi nội dung dài hơn mẫu."""
+    cell = cover_tbl.find(qn("w:tr")).find(qn("w:tc"))
+    spacers = [p for p in cell.findall(qn("w:p")) if not "".join(t.text for t in p.iter(qn("w:t")))]
+    for para in spacers[len(spacers) - count:] if count > 0 else []:
+        cell.remove(para)
 
 
 def add_cover(doc: Document, cover: Cover) -> None:
-    """Trang bìa theo mẫu: trường, logo, loại bài, tên đề tài, thông tin nhóm, nơi và thời gian."""
-    title_pt, info_pt, logo_cm, school_before, logo_before, kind_before, info_before, date_before = 16, 14, 6.9, 14, 18, 30, 60, 110
-    logo = Path(__file__).resolve().parent / "assets" / "logo.jpg"
-    cover_line(doc, cover.university, title_pt, school_before)
-    cover_line(doc, cover.school, title_pt)
-    doc.add_picture(str(logo), width=Cm(logo_cm))
-    pic = doc.paragraphs[-1]
-    pic.alignment, pic.paragraph_format.space_before = WD_ALIGN_PARAGRAPH.CENTER, Pt(logo_before)
-    cover_line(doc, cover.kind, title_pt, kind_before)
-    for line in cover.title_lines:
-        cover_line(doc, line, title_pt)
-    info_line(doc, "Giảng viên hướng dẫn:", cover.lecturer, before=info_before)
-    for idx, member in enumerate(cover.members):
-        info_line(doc, "Sinh viên thực hiện:" if idx == 0 else "", member.name, member.sid)
-    info_line(doc, "Lớp tín chỉ:", cover.course)
-    cover_line(doc, cover.place_date, info_pt, date_before)
+    """Điền trang bìa có sẵn trong mẫu (khung, logo, đường kẻ giữ nguyên) bằng nội dung của báo cáo."""
+    template_members, title_extra_lines = 2, 1
+    cover_tbl = doc.element.body.find(qn("w:tbl"))
+    fill_members(cover_tbl, cover.members)
+    trim_spacers(cover_tbl, len(cover.members) - template_members + title_extra_lines)
+    values = {"university": cover.university, "school": cover.school, "kind": cover.kind, "subject": cover.subject,
+              "title": " ".join(cover.title_lines), "lecturer": cover.lecturer, "course": cover.course, "place_date": cover.place_date}
+    for token, value in values.items():
+        fill_token(cover_tbl, token, value)
 
 
 def add_front_grid(doc: Document, grid: Grid, new_page: bool = False) -> None:
@@ -98,24 +96,10 @@ def set_page_numbers(section, fmt: str, start: int) -> None:
     section._sectPr.find(qn("w:cols")).addprevious(num)
 
 
-def set_cover_border(section) -> None:
-    """Khung viền đôi (dày ngoài, mảnh trong) quanh trang bìa."""
-    style, size, space = "thickThinSmallGap", "24", "24"
-    borders = OxmlElement("w:pgBorders")
-    borders.set(qn("w:offsetFrom"), "text")
-    for side in ("top", "left", "bottom", "right"):
-        edge = OxmlElement(f"w:{side}")
-        for key, value in (("val", style), ("sz", size), ("space", space), ("color", "auto")):
-            edge.set(qn(f"w:{key}"), value)
-        borders.append(edge)
-    section._sectPr.find(qn("w:pgMar")).addnext(borders)
-
-
 def finish_sections(doc: Document) -> None:
-    """Bìa không số trang và có khung; phần đầu đánh số La Mã từ ii; nội dung đánh số Ả Rập từ 1."""
+    """Bìa không số trang (khung có sẵn trong mẫu); phần đầu đánh số La Mã từ ii; nội dung đánh số Ả Rập từ 1."""
     cover, front, body = doc.sections
     cover.different_first_page_header_footer = True
-    set_cover_border(cover)
     set_page_numbers(front, "lowerRoman", 2)
     set_page_numbers(body, "decimal", 1)
 

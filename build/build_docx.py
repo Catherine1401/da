@@ -59,10 +59,11 @@ def body_blocks(s: SummaryData) -> list:
 
 def cover_info() -> Cover:
     """Thông tin trang bìa theo mẫu của trường."""
-    members = (Member("Lê Đức Duy", "23010772"), Member("Vũ Viết Huy", "23010699"), Member("Lê Mạnh Hùng", "23010123"),
-               Member("Nguyễn Bá Huy", "23010806"))
-    return Cover("ĐẠI HỌC PHENIKAA", "TRƯỜNG CÔNG NGHỆ THÔNG TIN PHENIKAA", "BÀI TẬP LỚN", (TITLE.upper(), SUBTITLE.upper()),
-                 "Nguyễn Ngọc Giang", members, "Trực quan hóa dữ liệu (CSE702060)", "Hà Nội, tháng 10 năm 2026")
+    leader, member = "Nhóm trưởng", "Thành viên"
+    members = (Member("Vũ Viết Huy", "23010699", "0346530705", leader), Member("Lê Đức Duy", "23010772", "0326091105", member),
+               Member("Lê Mạnh Hùng", "23010123", "0981015261", member), Member("Nguyễn Bá Huy", "23010806", "0858083524", member))
+    return Cover("ĐẠI HỌC PHENIKAA", "TRƯỜNG CÔNG NGHỆ THÔNG TIN PHENIKAA", "BÀI TẬP LỚN", "TRỰC QUAN HÓA DỮ LIỆU", (TITLE.upper(), SUBTITLE.upper()),
+                 "TS. Nguyễn Ngọc Giang", members, "Trực quan hoá dữ liệu-1-1-26(N01)", "Hà Nội, tháng 10 năm 2026")
 
 
 def add_front(doc, cover: Cover, toc: list, figs: list, tabs: list, pages: dict) -> None:
@@ -72,7 +73,7 @@ def add_front(doc, cover: Cover, toc: list, figs: list, tabs: list, pages: dict)
         add_front_grid(doc, grid)
     add_toc(doc, toc, TOC_TITLE, new_page=True)
     for title, items in ((TAB_LIST_TITLE, tabs), (FIG_LIST_TITLE, figs)):
-        add_toc(doc, [(text, 2, pages.get(text, "")) for text in items], title, new_page=True)
+        add_toc(doc, [(text, 2, pages.get(text, "")) for text in items], title, new_page=True, figures=True)
     add_front_grid(doc, term_grid(TERM_TITLE), new_page=True)
 
 

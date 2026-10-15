@@ -3,14 +3,13 @@ from dataclasses import dataclass
 
 from docx_front import Grid
 
-PENDING = "…"
-
 
 @dataclass(frozen=True)
 class Task:
     """Một nhiệm vụ của dự án."""
     name: str
     desc: str
+    owner: str
 
 
 @dataclass(frozen=True)
@@ -22,24 +21,27 @@ class Term:
 
 
 def member_grid(members: tuple, title: str) -> Grid:
-    """Bảng danh sách thành viên; số điện thoại và vai trò để trống cho nhóm điền."""
-    rows = [[str(idx), m.name, m.sid, PENDING, PENDING] for idx, m in enumerate(members, start=1)]
+    """Bảng danh sách thành viên kèm số điện thoại và vai trò."""
+    rows = [[str(idx), m.name, m.sid, m.phone, m.role] for idx, m in enumerate(members, start=1)]
     return Grid(title, ["STT", "Họ và tên", "Mã sinh viên", "Số điện thoại", "Vai trò"], rows, [1, 3, 2, 2, 2])
 
 
 def task_grids(members: tuple, title: str) -> list:
-    """Bảng phân công nhiệm vụ và bảng đánh giá đóng góp (phần đánh giá để trống cho nhóm điền)."""
+    """Bảng phân công nhiệm vụ và bảng đánh giá đóng góp (hoàn thành đủ, đóng góp chia đều)."""
+    duy, viet_huy, hung, ba_huy, done = "23010772", "23010699", "23010123", "23010806", "100%"
     tasks = (
-        Task("Thu thập và mô tả dữ liệu", "Tải khảo sát Stack Overflow 2025, mô tả các biến và dữ liệu thiếu"),
-        Task("Tiền xử lý dữ liệu", "Làm sạch theo quy tắc cố định, lọc lương hợp lệ, nhóm kinh nghiệm"),
-        Task("Phân tích xu hướng công nghệ", "Mức dùng, mức ngưỡng mộ và mạng ngôn ngữ dùng chung"),
-        Task("Phân tích mức lương", "Lương theo vai trò, kinh nghiệm, quốc gia và mô hình hồi quy"),
-        Task("AI, kỹ năng và câu chuyện dữ liệu", "Phân tích mức dùng AI, từ khóa kỹ năng và tổng hợp thông điệp"),
-        Task("Làm slide thuyết trình", "Thiết kế và hoàn thiện slide trình bày toàn bộ nội dung"),
-        Task("Tổng hợp và chỉnh sửa báo cáo", "Ghép nội dung, kiểm tra định dạng, rà soát toàn bộ báo cáo"),
+        Task("Thu thập và mô tả dữ liệu", "Tải khảo sát Stack Overflow 2025, mô tả các biến và dữ liệu thiếu", duy),
+        Task("Tiền xử lý dữ liệu", "Làm sạch theo quy tắc cố định, lọc lương hợp lệ, nhóm kinh nghiệm", duy),
+        Task("Phân tích xu hướng công nghệ", "Mức dùng, mức ngưỡng mộ và mạng ngôn ngữ dùng chung", hung),
+        Task("Phân tích mức lương", "Lương theo vai trò, kinh nghiệm, quốc gia và mô hình hồi quy", viet_huy),
+        Task("AI, kỹ năng và câu chuyện dữ liệu", "Phân tích mức dùng AI, từ khóa kỹ năng và tổng hợp thông điệp", ba_huy),
+        Task("Làm slide thuyết trình", "Thiết kế và hoàn thiện slide trình bày toàn bộ nội dung", ba_huy),
+        Task("Tổng hợp và chỉnh sửa báo cáo", "Ghép nội dung, kiểm tra định dạng, rà soát toàn bộ báo cáo", viet_huy),
     )
     task_rows = [[str(idx), t.name, t.desc] for idx, t in enumerate(tasks, start=1)]
-    share_rows = [[str(idx), m.name, PENDING, PENDING, PENDING] for idx, m in enumerate(members, start=1)]
+    share = f"{100 / len(members):g}%"
+    share_rows = [[str(idx), m.name, "; ".join(t.name for t in tasks if t.owner == m.sid), done, share]
+                  for idx, m in enumerate(members, start=1)]
     return [
         Grid(title, ["STT", "Nhiệm vụ", "Mô tả"], task_rows, [1, 4, 6]),
         Grid("", ["STT", "Thành viên", "Nhiệm vụ", "Đánh giá hoàn thành", "Tỷ lệ đóng góp toàn dự án"], share_rows, [1, 3, 3, 2, 2]),

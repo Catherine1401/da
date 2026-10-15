@@ -1,6 +1,7 @@
 """Bộ công cụ dựng báo cáo docx: các khối nội dung, hàm vẽ khối, mục lục có trường TOC thật và số trang."""
 import re
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 
 from docx import Document
 from docx.enum.section import WD_ORIENT
@@ -8,27 +9,21 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt, RGBColor
+from docx.shared import Cm, Twips
 
 from data import FigNote, aspect, load_note
 
 PAGE_W, PAGE_H = 21.0, 29.7
 MARGIN_LEFT_CM, MARGIN_RIGHT_CM, MARGIN_TOP_CM, MARGIN_BOTTOM_CM = 3.0, 2.0, 2.0, 2.0
-HEADER_CM = 1.2
+HEADER_CM = 1.25
 TEXT_W_CM = PAGE_W - MARGIN_LEFT_CM - MARGIN_RIGHT_CM
 FIG_W_CM = 15.5
-FONT = "Times New Roman"
-BODY_PT = 13
-CAPTION_PT = 12
-SPACE_AFTER_PT = 6
-HEADING_AFTER_PT = (12, 6, 6)
-LINE_SPACING = 1.1
-TABLE_SPACING = 1.0
-BLACK = RGBColor(0x00, 0x00, 0x00)
-TOC_TAB_CM = TEXT_W_CM
-TOC_INDENT_CM = 0.75
-BULLET_INDENT_CM = 0.75
-BULLET_MARK = "-"
+TEMPLATE = Path(__file__).resolve().parent / "assets" / "template.docx"
+TOC_TAB_TWIPS = 9061
+BULLET_NUM_ID = "2"
+NO_NUM_ID = "0"
+BULLET_TAB_TWIPS = 210
+BULLET_LINE_TWIPS = "264"
 CHAPTER_PREFIX = "CHƯƠNG"
 FRONT_CHAPTER = "0"
 APPENDIX_CHAPTER = "PL"
@@ -93,44 +88,27 @@ def add_field(paragraph, instruction: str) -> None:
         run._r.append(element)
 
 
-def set_font(font, size: float = BODY_PT) -> None:
-    """Đặt font Times New Roman (cả chữ Latin và Đông Á), cỡ chữ và màu đen, bỏ font theo theme."""
-    font.name, font.size, font.color.rgb = FONT, Pt(size), BLACK
-    fonts = font.element.get_or_add_rPr().get_or_add_rFonts()
-    for attr in ("w:asciiTheme", "w:hAnsiTheme", "w:eastAsiaTheme", "w:cstheme"):
-        fonts.attrib.pop(qn(attr), None)
-    for attr in ("w:eastAsia", "w:cs"):
-        fonts.set(qn(attr), FONT)
-
-
-def style_document(doc: Document) -> None:
-    """Định dạng kiểu Normal và Heading 1–3 theo mẫu báo cáo."""
-    normal = doc.styles["Normal"]
-    set_font(normal.font)
-    normal.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    normal.paragraph_format.space_before, normal.paragraph_format.space_after = Pt(0), Pt(SPACE_AFTER_PT)
-    normal.paragraph_format.line_spacing = LINE_SPACING
-    for level, after in enumerate(HEADING_AFTER_PT, start=1):
-        style = doc.styles[f"Heading {level}"]
-        set_font(style.font)
-        style.font.bold, style.font.italic = True, level == 3
-        fmt = style.paragraph_format
-        fmt.alignment = WD_ALIGN_PARAGRAPH.CENTER if level == 1 else WD_ALIGN_PARAGRAPH.LEFT
-        fmt.space_before, fmt.space_after, fmt.line_spacing = Pt(0), Pt(after), TABLE_SPACING
+def set_num(paragraph, num_id: str) -> None:
+    """Gắn đoạn vào danh sách đánh số của mẫu (num_id '0' là tắt đánh số kế thừa từ kiểu)."""
+    num = OxmlElement("w:numPr")
+    for tag, value in (("w:ilvl", "0"), ("w:numId", num_id)):
+        child = OxmlElement(tag)
+        child.set(qn("w:val"), value)
+        num.append(child)
+    paragraph._p.get_or_add_pPr().append(num)
 
 
 def new_document() -> Document:
-    """Tạo tài liệu A4 với lề, kiểu chữ và số trang ở đầu trang căn giữa theo mẫu."""
-    doc = Document()
+    """Mở mẫu báo cáo (kiểu chữ, danh sách và trang bìa của trường), đặt lề và số trang ở đầu trang căn giữa."""
+    doc = Document(str(TEMPLATE))
     section = doc.sections[0]
     section.page_width, section.page_height = Cm(PAGE_W), Cm(PAGE_H)
     section.orientation = WD_ORIENT.PORTRAIT
     section.left_margin, section.right_margin = Cm(MARGIN_LEFT_CM), Cm(MARGIN_RIGHT_CM)
     section.top_margin, section.bottom_margin = Cm(MARGIN_TOP_CM), Cm(MARGIN_BOTTOM_CM)
     section.header_distance = Cm(HEADER_CM)
-    style_document(doc)
     header = section.header.paragraphs[0]
-    header.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    header.style, header.alignment = doc.styles["Header"], WD_ALIGN_PARAGRAPH.CENTER
     add_field(header, "PAGE")
     return doc
 
@@ -145,12 +123,15 @@ def add_para(doc: Document, block: Para) -> None:
 
 
 def add_bullets(doc: Document, block: Bullets) -> None:
-    """Thêm danh sách gạch ngang đầu dòng thụt treo như mẫu."""
+    """Thêm danh sách gạch ngang đầu dòng bằng danh sách của mẫu, giãn dòng như mẫu."""
     for item in block.items:
-        para = doc.add_paragraph(f"{BULLET_MARK}\t{item}")
-        fmt = para.paragraph_format
-        fmt.left_indent, fmt.first_line_indent = Cm(BULLET_INDENT_CM), Cm(-BULLET_INDENT_CM)
-        fmt.tab_stops.add_tab_stop(Cm(BULLET_INDENT_CM))
+        para = doc.add_paragraph(item)
+        set_num(para, BULLET_NUM_ID)
+        para.paragraph_format.tab_stops.add_tab_stop(Twips(BULLET_TAB_TWIPS))
+        spacing = OxmlElement("w:spacing")
+        spacing.set(qn("w:line"), BULLET_LINE_TWIPS)
+        spacing.set(qn("w:lineRule"), "auto")
+        para._p.get_or_add_pPr().append(spacing)
 
 
 def caption_text(kind: str, label: str, title: str) -> str:
@@ -160,10 +141,8 @@ def caption_text(kind: str, label: str, title: str) -> str:
 
 
 def add_caption(doc: Document, text: str) -> None:
-    """Thêm chú thích hình hoặc bảng (căn giữa, chữ thường cỡ 12)."""
-    para = doc.add_paragraph()
-    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    para.add_run(text).font.size = Pt(CAPTION_PT)
+    """Thêm chú thích hình hoặc bảng theo kiểu Caption của mẫu (nghiêng, căn giữa)."""
+    doc.add_paragraph(text, style="Caption")
 
 
 def add_figure(doc: Document, note: FigNote, label: str) -> str:
@@ -177,10 +156,10 @@ def add_figure(doc: Document, note: FigNote, label: str) -> str:
 
 
 def fill_cell(cell, text: str, bold: bool) -> None:
-    """Ghi chữ vào ô bảng với giãn dòng đơn, không cách đoạn."""
+    """Ghi chữ vào ô bảng theo kiểu table của mẫu; ô tiêu đề in đậm căn giữa."""
     cell.text = ""
     para = cell.paragraphs[0]
-    para.paragraph_format.space_after, para.paragraph_format.line_spacing = Pt(0), TABLE_SPACING
+    para.style = cell.part.document.styles["table"]
     para.alignment = WD_ALIGN_PARAGRAPH.CENTER if bold else WD_ALIGN_PARAGRAPH.LEFT
     para.add_run(str(text)).bold = bold
 
@@ -216,25 +195,22 @@ def add_table(doc: Document, block: Tab, label: str) -> str:
     return text
 
 
-def add_title(doc: Document, text: str, new_page: bool = False) -> None:
-    """Tiêu đề trang phần đầu (in hoa, đậm, căn giữa), không vào kiểu Heading; new_page để bắt đầu trang mới."""
-    para = doc.add_paragraph()
-    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+def add_title(doc: Document, text: str, new_page: bool = False, plain: bool = False) -> None:
+    """Tiêu đề trang phần đầu in hoa theo kiểu section của mẫu; plain là chữ đậm căn giữa (như MỤC LỤC); new_page để sang trang."""
+    para = doc.add_paragraph(style=None if plain else "section")
     para.paragraph_format.page_break_before = new_page
-    para.paragraph_format.space_after = Pt(HEADING_AFTER_PT[0])
-    para.add_run(text.upper()).bold = True
+    if plain:
+        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    para.add_run(text.upper()).bold = plain or None
 
 
-def add_toc(doc: Document, entries: list, title: str, new_page: bool = False) -> None:
-    """Mục lục tĩnh: tên mục, dấu chấm dẫn và số trang; mục cấp 1 in đậm, cấp 3 thụt vào."""
-    add_title(doc, title, new_page)
+def add_toc(doc: Document, entries: list, title: str, new_page: bool = False, figures: bool = False) -> None:
+    """Mục lục tĩnh theo kiểu toc 1–3 của mẫu (figures: kiểu table of figures cho danh mục hình, bảng)."""
+    add_title(doc, title, new_page, plain=not figures)
     for text, level, page in entries:
-        para = doc.add_paragraph()
-        fmt = para.paragraph_format
-        fmt.left_indent = Cm(TOC_INDENT_CM * max(level - 2, 0))
-        fmt.space_after, fmt.line_spacing, para.alignment = Pt(0), TABLE_SPACING, WD_ALIGN_PARAGRAPH.LEFT
-        fmt.tab_stops.add_tab_stop(Cm(TOC_TAB_CM), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
-        para.add_run(f"{text}\t{page}").bold = level == 1
+        para = doc.add_paragraph(style="table of figures" if figures else f"toc {level}")
+        para.paragraph_format.tab_stops.add_tab_stop(Twips(TOC_TAB_TWIPS), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        para.add_run(f"{text}\t{page}")
 
 
 def add_page_break(doc: Document) -> None:
@@ -306,6 +282,16 @@ def heading_entries(blocks: list) -> list:
     return [(head_text(b), b.level) for b in blocks if isinstance(b, Head) and b.level <= 2]
 
 
+def add_heading(doc: Document, block: Head, new_page: bool) -> None:
+    """Tiêu đề chương có số theo kiểu Heading của mẫu (số ghi sẵn trong chữ nên tắt đánh số tự động); chương không số dùng kiểu section."""
+    if block.level == 1 and not chapter_number(block):
+        para = doc.add_paragraph(head_text(block), style="section")
+    else:
+        para = doc.add_heading(head_text(block), level=block.level)
+        set_num(para, NO_NUM_ID)
+    para.paragraph_format.page_break_before = new_page
+
+
 def render_blocks(doc: Document, blocks: list) -> None:
     """Vẽ các khối vào tài liệu với số hình và bảng theo chương; ngắt trang trước tiêu đề được đặt vào chính tiêu đề."""
     labels, pending_break = caption_labels(blocks), False
@@ -313,8 +299,7 @@ def render_blocks(doc: Document, blocks: list) -> None:
         if pending_break and not isinstance(block, Head):
             add_page_break(doc)
         if isinstance(block, Head):
-            heading = doc.add_heading(head_text(block), level=block.level)
-            heading.paragraph_format.page_break_before = pending_break
+            add_heading(doc, block, pending_break)
         elif isinstance(block, Para):
             add_para(doc, block)
         elif isinstance(block, Bullets):
