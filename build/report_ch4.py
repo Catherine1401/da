@@ -1,4 +1,4 @@
-"""Nội dung chương 4: mức lương (Q5, Q6, Q7, Q8)."""
+"""Nội dung chương 3: mức lương (Q5, Q6, Q7, Q8)."""
 import numpy as np
 import pandas as pd
 
@@ -29,9 +29,9 @@ def ci(lo, hi) -> str:
 
 
 def intro(s: SummaryData) -> list:
-    """Mở đầu chương 4."""
+    """Mở đầu chương 3."""
     return [
-        Head("4. Mức lương", 1),
+        Head("3. Mức lương", 1),
         Para(f"Chương này dùng bảng {fmt_int(s.n_sal)} lập trình viên chuyên nghiệp có lương hợp lệ (1.000–500.000 USD). Lương là tổng thu nhập năm đã quy đổi sang USD danh nghĩa, chưa điều chỉnh sức mua. "
              "Do lương lệch phải mạnh, báo cáo dùng median và khoảng tin cậy bootstrap 95% thay cho mean. Chương gồm bốn phần: phân phối lương theo vai trò và kinh nghiệm (Q5), công nghệ đi cùng lương và hồi quy kiểm chứng (Q6), lương theo nước (Q7) và so sánh vai trò (Q8)."),
         Para("Giả thuyết cần kiểm chứng ở Q6 là quốc gia và kinh nghiệm đi cùng chênh lệch lương nhiều hơn ngôn ngữ lập trình. Giả thuyết này có lý do: ngôn ngữ phổ biến ở các nước lương cao sẽ trông như 'trả lương cao' chỉ vì người dùng sống ở nước có mặt bằng lương cao. "
@@ -48,7 +48,7 @@ def q5_section(s: SummaryData) -> list:
     role_rows = [(r.role, fmt_int(r.n), fmt_int(r.median)) for r in roles.itertuples()]
     exp_rows = [(str(r.exp_bin), fmt_int(r.n), fmt_int(r.median), ci(r.lo, r.hi)) for r in exp.itertuples()]
     return [
-        Head("4.1. Phân phối lương theo vai trò và kinh nghiệm (Q5)", 2),
+        Head("3.1. Phân phối lương theo vai trò và kinh nghiệm (Q5)", 2),
         *figure("f5_1", "hist", [f"Các mốc phân vị: phân vị 25% là {usd(stats['q1'])}, median {usd(stats['median'])}, phân vị 75% là {usd(stats['q3'])}; mean là {usd(stats['mean'])}.",
                                    f"Phần đuôi bên phải kéo dài tới 500.000 USD nhưng chiếm tỷ lệ nhỏ; một nửa số người có lương nằm trong khoảng từ {usd(stats['q1'])} đến {usd(stats['q3'])}."]),
         *figure("f5_2", "ridge", [f"Ba vai trò có median cao nhất: {top}. Ba vai trò thấp nhất: {low}.", "Chi tiết median và cỡ mẫu từng vai trò ở [[tab:roles]]."]),
@@ -69,7 +69,7 @@ def q6_descriptive() -> list:
     worst_cell = heat.stack().idxmin()
     role_means = heat.mean().sort_values(ascending=False)
     return [
-        Head("4.2. Công nghệ nào đi cùng mức lương cao (Q6)", 2),
+        Head("3.2. Công nghệ nào đi cùng mức lương cao (Q6)", 2),
         *figure("f6_1", "ci", [f"Ba ngôn ngữ có median cao nhất: {high}. PHP có median thấp nhất ({usd(langs.iloc[-1]['median'])}).",
                                  "Các ngôn ngữ ở giữa (từ Python đến SQL) có median rất gần nhau và khoảng tin cậy chồng lấn, nên thứ tự giữa chúng không đáng tin cậy."]),
         *figure("f6_2", "heat", [f"Ô cao nhất là {join_names(f'{a} × {b}' for a, b in best_cells)} ({usd(stacked.max())}), ô thấp nhất là {worst_cell[0]} × {worst_cell[1]} ({usd(heat.stack().min())}). "
@@ -115,7 +115,7 @@ def q7_section(s: SummaryData) -> list:
     by_name = full.set_index("name")["median"]
     header = ["Quốc gia", "n", "Median (USD)", "Khoảng tin cậy 95%"]
     return [
-        Head("4.3. Lương theo nước và vị trí của Việt Nam (Q7)", 2),
+        Head("3.3. Lương theo nước và vị trí của Việt Nam (Q7)", 2),
         *figure("f7_1", "choropleth", [f"Nước có median cao nhất là {s.top_country} ({usd(s.top_country_median)}), thấp nhất là {s.low_country} ({usd(s.low_country_median)}); chênh lệch {fmt_num(s.top_country_median / s.low_country_median)} lần. "
                                          f"Phần lớn các nước Bắc Mỹ, Tây Âu và Úc có màu đậm (ngoại lệ trong Bắc Mỹ: Mexico, {usd(by_name[MEXICO])}); Nam Á và châu Phi có màu nhạt, còn Singapore ({usd(by_name[SINGAPORE])}) là ngoại lệ của Đông Nam Á."]),
         *figure("f7_2", "rank", [f"[[tab:region]] so sánh Việt Nam với một số nước chọn trong khu vực. Việt Nam xếp thứ {s.vn_rank}/{s.n_countries} với median {usd(s.vn_median)} từ {s.vn_n} người. Khoảng tin cậy rộng nên thứ hạng không chắc chắn, nhưng Việt Nam nằm gần nhóm các nước đang phát triển ở châu Á và châu Phi trong dữ liệu này."]),
@@ -130,7 +130,7 @@ def q8_section() -> list:
     prof = table("f8_1").sort_values("median_sal", ascending=False)
     rows = [(r.role, fmt_int(r.n), fmt_int(r.median_sal), fmt_num(r.median_exp, 0), pct(r.ai_daily, 0), fmt_num(r.mean_sat)) for r in prof.itertuples()]
     return [
-        Head("4.4. So sánh các vai trò (Q8)", 2),
+        Head("3.4. So sánh các vai trò (Q8)", 2),
         *figure("f8_1", "spider", ["Ba vai trò được chọn vì tương phản: Engineering manager (lương cao nhất), AI/ML engineer (dùng AI hằng ngày nhiều nhất) và Embedded (dùng AI hằng ngày ít nhất). "
                                      "Trong ba vai trò này, Engineering manager vượt trội ở lương và kinh nghiệm, AI/ML engineer vượt ở mức dùng AI nhưng ít kinh nghiệm hơn, còn Embedded thấp ở cả mức dùng AI và hài lòng (Architect còn có kinh nghiệm cao hơn, 18 năm, nhưng không thuộc ba vai trò được chọn)."]),
         *figure("f8_2", "dot", ["[[tab:profile]] liệt kê số liệu đầy đủ của 12 vai trò."]),
@@ -140,9 +140,9 @@ def q8_section() -> list:
 
 
 def summary_section(s: SummaryData) -> list:
-    """Mục 4.5: tóm tắt chương."""
+    """Mục 3.5: tóm tắt chương."""
     return [
-        Head("4.5. Tóm tắt chương", 2),
+        Head("3.5. Tóm tắt chương", 2),
         Para(f"Median lương của lập trình viên chuyên nghiệp trong mẫu là {usd(s.median_pay)} (mean {usd(s.mean_pay)}). Lương tăng đều theo kinh nghiệm, từ {usd(s.median_0_2)} ở nhóm 0–2 năm lên {usd(s.median_21)} ở nhóm 21+ năm. "
              f"Quốc gia là yếu tố gắn với chênh lệch lớn nhất: {fmt_num(s.top_country_median / s.low_country_median)} lần giữa nước cao nhất và thấp nhất. Hồi quy cho thấy quốc gia giải thích {pct(s.r2_country * 100, 0)} biến thiên log(lương), thêm kinh nghiệm lên {pct(s.r2_country_exp * 100, 0)}, thêm 15 ngôn ngữ chỉ cộng {fmt_num((s.r2_full - s.r2_country_exp) * 100)} điểm phần trăm."),
         Break(),
@@ -150,5 +150,5 @@ def summary_section(s: SummaryData) -> list:
 
 
 def chapter4(s: SummaryData) -> list:
-    """Gộp chương 4."""
+    """Gộp chương 3."""
     return intro(s) + q5_section(s) + q6_descriptive() + q6_regression() + q7_section(s) + q8_section() + summary_section(s)

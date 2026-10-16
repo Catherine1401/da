@@ -1,4 +1,4 @@
-"""Nội dung chương 3: xu hướng công nghệ (Q2, Q3, Q4)."""
+"""Nội dung chương 2: xu hướng công nghệ (Q2, Q3, Q4)."""
 import networkx as nx
 import pandas as pd
 from networkx.algorithms import community
@@ -13,9 +13,9 @@ TOP_LIST = 5
 
 
 def intro() -> list:
-    """Mở đầu chương 3."""
+    """Mở đầu chương 2."""
     return [
-        Head("3. Xu hướng công nghệ", 1),
+        Head("2. Xu hướng công nghệ", 1),
         Para("Chương này trả lời ba câu hỏi: công nghệ nào đang được dùng nhiều (Q2), công nghệ nào được ngưỡng mộ và muốn dùng so với mức đang dùng (Q3), và các ngôn ngữ liên hệ với nhau thế nào (Q4). "
              "Vì dữ liệu chỉ có một năm, ba chỉ số 'đang dùng', 'muốn dùng' và 'được ngưỡng mộ' được dùng như chỉ số thay thế cho xu hướng: một ngôn ngữ có mức muốn dùng cao hơn mức đang dùng cho thấy người dùng kỳ vọng nó sẽ được dùng nhiều hơn, dù không chứng minh được mức dùng thực sự sẽ tăng."),
         Para("Tất cả tỷ lệ trong chương được tính trên số người có trả lời cột tương ứng (mẫu số ghi ở chân từng biểu đồ). Một người thường chọn nhiều công nghệ cùng lúc, nên tổng các tỷ lệ vượt 100%."),
@@ -35,7 +35,7 @@ def q2_section() -> list:
     small_text = "; ".join(f"{group}: " + join_names(f"{row.value} {pct(row.pct, 0)}" for row in sub.head(3).itertuples())
                            for group, sub in small.groupby("group", sort=False))
     return [
-        Head("3.1. Công nghệ nào đang được dùng nhiều nhất (Q2)", 2),
+        Head("2.1. Công nghệ nào đang được dùng nhiều nhất (Q2)", 2),
         *figure("f2_1", "bar_short", [f"Tám ngôn ngữ đứng đầu: {top_langs_text(langs, 8)}.",
                                   "Nhóm ba ngôn ngữ đầu (JavaScript, HTML/CSS, SQL) đều vượt 58%, nên ba công nghệ web và dữ liệu này có mặt ở phần lớn người trả lời. Python đứng thứ tư với 58,1%, sát nhóm đầu."]),
         *figure("f2_2", "treemap", [f"Người dùng nhiều nhất ở từng nhóm: {leader_text}.",
@@ -63,7 +63,7 @@ def q3_section() -> list:
     up = ", ".join(f"{r.value} +{fmt_num(r.want_gap)}" for r in gap.tail(TOP_LIST)[::-1].itertuples())
     down = ", ".join(f"{r.value} {fmt_num(r.want_gap)}" for r in gap.head(TOP_LIST).itertuples())
     return [
-        Head("3.2. Dùng nhiều có được ngưỡng mộ và muốn dùng nhiều không (Q3)", 2),
+        Head("2.2. Dùng nhiều có được ngưỡng mộ và muốn dùng nhiều không (Q3)", 2),
         *figure("f3_1", "scatter", [f"Trong các ngôn ngữ có ít nhất {pct(POPULAR_MIN_PCT, 0)} người dùng, mức ngưỡng mộ cao nhất là: {top_adm}; thấp nhất là: {low_adm}.",
                                       "Nhóm ở góc trên bên trái (mức dùng thấp nhưng ngưỡng mộ rất cao: Gleam, Elixir, Zig, và cả Rust với mức dùng vừa phải) khác với nhóm ở góc dưới bên phải (dùng nhiều nhưng ngưỡng mộ vừa phải, như Java và JavaScript). Dữ liệu không cho biết lý do (ví dụ ngôn ngữ mới hay phải dùng vì công việc), nên đây chỉ là hướng cần kiểm tra thêm."]),
         *figure("f3_2", "diverging", [f"Mức muốn dùng vượt mức đang dùng nhiều nhất (điểm phần trăm): {up}. Mức muốn dùng thấp hơn mức đang dùng nhiều nhất: {down}.",
@@ -88,7 +88,7 @@ def q4_section() -> list:
     stacked = flows.stack().sort_values(ascending=False)
     flow_text = "; ".join(f"{src} → {dst} ({pct(v, 0)})" for (src, dst), v in stacked.head(TOP_LIST).items())
     return [
-        Head("3.3. Các ngôn ngữ đi cùng nhau thế nào (Q4)", 2),
+        Head("2.3. Các ngôn ngữ đi cùng nhau thế nào (Q4)", 2),
         *figure("f4_1", "network", [f"Năm cặp có lift cao nhất: {edge_text}.",
                                       f"Đồ thị được dựng bằng thư viện NetworkX [5]; thuật toán phát hiện cộng đồng (modularity) tách đồ thị thành các cụm: {cluster_text(edges)}. Một số cụm có thể giải thích bằng hệ sinh thái chung (ví dụ cụm C#, VB.NET, PowerShell, VBA hoặc cụm Java, Kotlin, Groovy), một số cụm khác (như Go và Ruby) dữ liệu không cho biết lý do. Các ngôn ngữ web rất phổ biến (JavaScript, HTML/CSS, SQL) không xuất hiện trong mạng vì chúng đi cùng mọi ngôn ngữ khác nên lift không cao (ví dụ JavaScript với HTML/CSS có lift 1,32, thấp hơn ngưỡng 1,5)."]),
         *figure("f4_2", "sankey", [f"Các luồng mạnh nhất (tỷ lệ người đang dùng ngôn ngữ nguồn muốn dùng ngôn ngữ đích): {flow_text}.",
@@ -97,9 +97,9 @@ def q4_section() -> list:
 
 
 def summary_section(s: SummaryData) -> list:
-    """Mục 3.4: tóm tắt chương."""
+    """Mục 2.4: tóm tắt chương."""
     return [
-        Head("3.4. Tóm tắt chương", 2),
+        Head("2.4. Tóm tắt chương", 2),
         Para(f"Ba ngôn ngữ dùng nhiều nhất là {join_names(s.top_langs)}; trong nhóm đã khá phổ biến, các ngôn ngữ được ngưỡng mộ nhất là {join_names(s.admired_langs)}. "
              "Mức dùng và mức ngưỡng mộ gần như không liên hệ (hệ số Spearman 0,12), nên ngôn ngữ đứng đầu về số người dùng không phải ngôn ngữ đứng đầu về mức ngưỡng mộ. Một số ngôn ngữ thường được dùng chung và tạo thành cụm, gợi ý các ngôn ngữ người học có thể học cùng nhau."),
         Para("Hạn chế cần nhớ: dữ liệu chỉ có năm 2025, nên 'muốn dùng' và 'ngưỡng mộ' là mong muốn tự khai báo chứ không phải sự thay đổi thật theo thời gian; mẫu lệch về Mỹ và châu Âu nên có thể khác với thị trường Việt Nam."),
@@ -108,5 +108,5 @@ def summary_section(s: SummaryData) -> list:
 
 
 def chapter3(s: SummaryData) -> list:
-    """Gộp chương 3."""
+    """Gộp chương 2."""
     return intro() + q2_section() + q3_section() + q4_section() + summary_section(s)

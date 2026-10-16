@@ -1,4 +1,4 @@
-"""Nội dung chương 5 (AI và câu chuyện dữ liệu), chương 6 (kết luận), tài liệu tham khảo và phụ lục."""
+"""Nội dung chương 4 (AI và câu chuyện dữ liệu), phần kết luận, tài liệu tham khảo và phụ lục."""
 from data import SummaryData, fmt_int, fmt_num
 from docx_kit import Break, Bullets, Head, Para, Tab
 from report_common import figure, join_names, pct, table, usd
@@ -36,11 +36,11 @@ def q9_section(s: SummaryData) -> list:
     words = table("f9_2")
     word_rows = [(r.word, fmt_int(r.responses), pct(r.pct)) for r in words.head(TOP_WORDS_TABLE).itertuples()]
     return [
-        Head("5. AI và kỹ năng còn giá trị, câu chuyện dữ liệu tổng hợp", 1),
-        Head("5.1. AI trong công việc của lập trình viên", 2),
-        Para(f"Trong {fmt_int(s.ai_daily_pct_n)} người trả lời câu hỏi về việc dùng công cụ AI, {pct(s.ai_daily_pct, 0)} dùng AI hằng ngày. Ở mức vai trò (Chương 4), tỷ lệ dùng AI hằng ngày từ 29% (Embedded) đến 74% (AI/ML engineer), và không liên hệ rõ với mức lương (hệ số Spearman 0,08). "
+        Head("4. AI và kỹ năng còn giá trị, câu chuyện dữ liệu tổng hợp", 1),
+        Head("4.1. AI trong công việc của lập trình viên", 2),
+        Para(f"Trong {fmt_int(s.ai_daily_pct_n)} người trả lời câu hỏi về việc dùng công cụ AI, {pct(s.ai_daily_pct, 0)} dùng AI hằng ngày. Ở mức vai trò (Chương 3), tỷ lệ dùng AI hằng ngày từ 29% (Embedded) đến 74% (AI/ML engineer), và không liên hệ rõ với mức lương (hệ số Spearman 0,08). "
              "Nói cách khác, AI đã trở thành công cụ hằng ngày của gần một nửa số người trả lời, nhưng việc dùng AI nhiều không đi cùng mức lương cao ở cấp vai trò."),
-        Head("5.2. Kỹ năng nào còn giá trị trong 3–5 năm tới (Q9)", 2),
+        Head("4.2. Kỹ năng nào còn giá trị trong 3–5 năm tới (Q9)", 2),
         Para("Câu hỏi mở của khảo sát yêu cầu người trả lời nêu kỹ năng mà họ tin là còn giá trị trong 3–5 năm tới. Có 22.540 câu trả lời; mỗi từ được đếm một lần cho mỗi câu trả lời, đã bỏ từ dừng tiếng Anh, từ chung chung (như 'will', 'skills', 'need') và gộp dạng số nhiều với số ít."),
         *figure("f9_1", "cloud", [cloud_text(words, s)]),
         *figure("f9_2", "words", ["Bảng tần suất ở [[tab:words]] cho biết tỷ lệ chính xác."]),
@@ -52,7 +52,7 @@ def q9_section(s: SummaryData) -> list:
 def story_section(s: SummaryData) -> list:
     """Mục 5.3: câu chuyện dữ liệu theo cấu trúc của bài giảng."""
     return [
-        Head("5.3. Câu chuyện dữ liệu tổng hợp", 2),
+        Head("4.3. Câu chuyện dữ liệu tổng hợp", 2),
         Para("Theo bài giảng Data Storytelling, câu chuyện dữ liệu gồm bối cảnh, vấn đề, phát hiện, bằng chứng và kết luận. Phần này kể lại toàn bộ phân tích theo cấu trúc đó, mỗi ý dẫn tới biểu đồ chứng minh.", italic=True),
         Para(f"Khảo sát Stack Overflow 2025 có {fmt_int(s.n_all)} phản hồi, {pct(s.pct_pro, 0)} là lập trình viên chuyên nghiệp, nhiều nhất ở Mỹ, Đức và Ấn Độ; Việt Nam chỉ có 145 phản hồi ([[fig:f1_3]]). Sinh viên và lập trình viên mới ở Việt Nam cần trả lời hai câu hỏi: học công nghệ nào, và kỳ vọng mức lương ra sao.", lead="Bối cảnh."),
         Para("Các nguồn tư vấn thường đồng nhất 'công nghệ phổ biến' với 'công nghệ nên học' và 'công nghệ trả lương cao'. Dữ liệu cho phép kiểm tra hai giả định ngầm này: phổ biến có đồng nghĩa với được ngưỡng mộ không, và ngôn ngữ có đi cùng mức lương cao hơn không.", lead="Vấn đề."),
@@ -71,19 +71,19 @@ def story_section(s: SummaryData) -> list:
 
 
 def chapter6(s: SummaryData) -> list:
-    """Chương 6: kết luận, khuyến nghị, hạn chế, hướng phát triển."""
+    """Phần kết luận: kết luận, khuyến nghị, hạn chế, hướng phát triển."""
     return [
-        Head("6. Kết luận và hạn chế", 1),
-        Head("6.1. Kết luận", 2),
+        Head("Kết luận và hạn chế", 1),
+        Head("Kết luận", 2),
         Para("Bài tập lớn đã trả lời chín câu hỏi bằng 23 biểu đồ, gồm các dạng bar, histogram, line, scatter, treemap, heatmap, ridgeline, spider, wordcloud, choropleth, network và Sankey. Ba kết luận chính: (1) công nghệ phổ biến không đồng nghĩa với được ngưỡng mộ; (2) lương lệch phải mạnh nên cần dùng median; (3) quốc gia và kinh nghiệm giải thích biến thiên của lương nhiều hơn hẳn ngôn ngữ lập trình."),
-        Head("6.2. Khuyến nghị cho sinh viên và lập trình viên mới ở Việt Nam", 2),
+        Head("Khuyến nghị cho sinh viên và lập trình viên mới ở Việt Nam", 2),
         Bullets(list(s.recommendations)),
-        Head("6.3. Hạn chế", 2),
+        Head("Hạn chế", 2),
         Bullets(list(s.limitations) + [
             "Wordcloud và bảng tần suất không xét ngữ cảnh của câu trả lời; các cụm ngôn ngữ phụ thuộc ngưỡng chọn cạnh (2% người trả lời và lift 1,5).",
             "Mức ngưỡng mộ phụ thuộc cách chọn mẫu số (người đang dùng và có trả lời mục ngưỡng mộ); chọn cách khác có thể thay đổi giá trị tuyệt đối nhưng không thay đổi thứ tự lớn.",
         ]),
-        Head("6.4. Hướng phát triển", 2),
+        Head("Hướng phát triển", 2),
         Bullets([
             "Thêm dữ liệu khảo sát các năm trước (2024, 2023 đều có tệp results.csv trên cùng kho lưu trữ) để đo xu hướng theo thời gian thật, sau khi chuẩn hóa các cột khác nhau giữa các năm.",
             "Điều chỉnh lương theo sức mua (PPP) để so sánh công bằng hơn giữa các nước, đặc biệt khi so Việt Nam với Mỹ và châu Âu.",
@@ -127,5 +127,5 @@ def appendix() -> list:
 
 
 def chapters_5_6(s: SummaryData) -> list:
-    """Gộp chương 5, 6, tài liệu tham khảo và phụ lục."""
+    """Gộp chương 4, kết luận, tài liệu tham khảo và phụ lục."""
     return q9_section(s) + story_section(s) + chapter6(s) + references() + appendix()
