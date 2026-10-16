@@ -74,16 +74,16 @@ def chapter6(s: SummaryData) -> list:
     """Phần kết luận: kết luận, khuyến nghị, hạn chế, hướng phát triển."""
     return [
         Head("Kết luận và hạn chế", 1),
-        Head("Kết luận", 2),
+        Head("1. Kết luận", 2),
         Para("Bài tập lớn đã trả lời chín câu hỏi bằng 23 biểu đồ, gồm các dạng bar, histogram, line, scatter, treemap, heatmap, ridgeline, spider, wordcloud, choropleth, network và Sankey. Ba kết luận chính: (1) công nghệ phổ biến không đồng nghĩa với được ngưỡng mộ; (2) lương lệch phải mạnh nên cần dùng median; (3) quốc gia và kinh nghiệm giải thích biến thiên của lương nhiều hơn hẳn ngôn ngữ lập trình."),
-        Head("Khuyến nghị cho sinh viên và lập trình viên mới ở Việt Nam", 2),
+        Head("2. Khuyến nghị cho sinh viên và lập trình viên mới ở Việt Nam", 2),
         Bullets(list(s.recommendations)),
-        Head("Hạn chế", 2),
+        Head("3. Hạn chế", 2),
         Bullets(list(s.limitations) + [
             "Wordcloud và bảng tần suất không xét ngữ cảnh của câu trả lời; các cụm ngôn ngữ phụ thuộc ngưỡng chọn cạnh (2% người trả lời và lift 1,5).",
             "Mức ngưỡng mộ phụ thuộc cách chọn mẫu số (người đang dùng và có trả lời mục ngưỡng mộ); chọn cách khác có thể thay đổi giá trị tuyệt đối nhưng không thay đổi thứ tự lớn.",
         ]),
-        Head("Hướng phát triển", 2),
+        Head("4. Hướng phát triển", 2),
         Bullets([
             "Thêm dữ liệu khảo sát các năm trước (2024, 2023 đều có tệp results.csv trên cùng kho lưu trữ) để đo xu hướng theo thời gian thật, sau khi chuẩn hóa các cột khác nhau giữa các năm.",
             "Điều chỉnh lương theo sức mua (PPP) để so sánh công bằng hơn giữa các nước, đặc biệt khi so Việt Nam với Mỹ và châu Âu.",
